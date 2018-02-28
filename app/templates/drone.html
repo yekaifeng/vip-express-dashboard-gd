@@ -1,0 +1,121 @@
+<!DOCTYPE html>  
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>无人机实时GPS信息</title>
+    <style type="text/css">
+            html{height:100%}
+            body{height:100%;width:100%;margin:0px;padding:0px}
+            #container{height:100%}
+            #map{height:100%;width:80%;float:left}
+            #log{height:100%;width:20%;background-color: aliceblue; float:right}
+    </style>
+    <link rel="stylesheet" href="http://cache.amap.com/lbs/static/main1119.css"/>
+</head>
+<body>
+<div id="container">
+<div id="map"></div>
+<div id="log">log area</div>
+</div>
+
+<script src="http://webapi.amap.com/maps?v=1.4.4&key=9e6af7b207a6343164dbcc1fe9eae222"></script>
+<!--引入UI组件库（1.0版本） -->
+<!--script src="//webapi.amap.com/ui/1.0/main.js">initAMapUI(); </script-->
+
+<script>
+
+        map = new AMap.Map('map', {
+            center: [113.255719,23.110029],
+            zoom: 14
+        });
+        map.plugin(["AMap.ToolBar",'AMap.Scale','AMap.MapType'],
+        function() {
+            map.addControl(new AMap.ToolBar());
+            map.addControl(new AMap.Scale());
+            map.addControl(new AMap.MapType());
+        });
+
+
+/*
+        center: [113.165085,22.993399],
+        initAMapUI(); //这里调用initAMapUI初始化
+        //加载AwesomeMarker，loadUI的路径参数为模块名中 'ui/' 之后的部分
+        AMapUI.loadUI(['overlay/AwesomeMarker'], function(AwesomeMarker) {
+
+        new AwesomeMarker({
+            //设置awesomeIcon
+            //awesomeIcon: 'paper-plane', //可用的icons参见： http://fontawesome.io/icons/
+
+            //下列参数继承自父类
+
+            //iconLabel中不能包含innerHTML属性（内部会利用awesomeIcon自动构建）
+            iconLabel: {
+                style: {
+                    color: '#333', //设置颜色
+                    fontSize: '14px' //设置字号
+                }
+            },
+            //iconStyle: 'solid', //设置图标样式
+            iconStyle:{
+                src: 'http://localhost:5000/drone_icon/',
+                style: {
+                    width: '30px',
+                    height: '30px'
+            }},
+
+
+            //基础的Marker参数
+            map: map,
+            position: map.getCenter(),
+            title: 'N3'
+        });
+    });
+    */
+
+
+</script>
+
+    <script type="text/javascript"
+                src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+        var icon = new AMap.Icon({
+                image : 'http://localhost:5000/drone_icon/',//30px*30px
+                //icon可缺省，缺省时为默认的蓝色水滴图标，
+                size : new AMap.Size(30,30)
+        });
+        var droneMk = new AMap.Marker({
+                icon : icon,
+                position : map.getCenter(),
+                offset : new AMap.Pixel(0,0),
+                map : map,
+                title: 'N3',
+                autoRotation: true
+        });
+
+            var url = "http://" + document.domain + ":" + location.port;
+            var socket = io.connect(url + "/demo");
+            socket.on('connect', function() {
+                socket.emit('connect_event', {data: 'connected!'});
+            })
+
+            socket.on('server_response', function(msg) {
+                $('#log').empty()
+                $('#log').append($('<div/>').text('经度' + ': ' + msg.data.basic_data.position_longitude).html());
+                $('#log').append('<br>' + $('<div/>').text('纬度' + ': ' + msg.data.basic_data.position_latitude).html());
+                $('#log').append('<br>' + $('<div/>').text('高度' + ': ' + msg.data.basic_data.position_altitude).html());
+                $('#log').append('<br>' + $('<div/>').text('速度x' + ': ' + msg.data.basic_data.velocity_vx).html());
+                $('#log').append('<br>' + $('<div/>').text('速度y' + ': ' + msg.data.basic_data.velocity_vy).html());
+                $('#log').append('<br>' + $('<div/>').text('速度z' + ': ' + msg.data.basic_data.velocity_vz).html());
+
+                var myP1 = new AMap.LngLat(msg.data.basic_data.position_longitude,msg.data.basic_data.position_latitude);
+                droneMk.setPosition(myP1);
+            });
+        });
+    </script>
+</body>
+</html>
