@@ -32,8 +32,7 @@ lm.login_view = 'login'
 q = Queue.Queue(100)
 
 def create_connection():
-    credentials = pika.PlainCredentials('apps', 'vipshop')
-    #credentials = pika.PlainCredentials('admin', 'ois@pass')
+    credentials = pika.PlainCredentials('apps', 'xxx')
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbit.kubernete.cn', credentials=credentials))
     return connection
 

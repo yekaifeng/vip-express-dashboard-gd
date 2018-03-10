@@ -4,7 +4,7 @@ Python Aplication Template
 Licence: GPLv3
 """
 
-from flask import url_for, redirect, render_template, send_file, flash, g, session
+from flask import url_for, redirect, render_template, send_file, flash, send_from_directory,g, session
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, lm, socketio, q
 from forms import ExampleForm, LoginForm
@@ -33,6 +33,14 @@ def drone():
 @app.route('/drone_icon/')
 def drone_icon():
 	return send_file('templates/drone-icon1.png', mimetype='image/gif')
+
+@app.route('/drone_control/')
+def drone_control():
+	return render_template('drone_control.html')
+
+@app.route('/js/<path:path>')
+def send_js(path):
+    return send_from_directory('templates/js', path)
 
 @app.route('/list/')
 def posts():
@@ -101,7 +109,7 @@ def ws_disconn():
 
 @socketio.on('connect_event', namespace='/demo')
 def connected_msg(msg):
-    print "connected msg"
+    print "connected event"
     global thread
     with thread_lock:
         if thread is None:
@@ -120,13 +128,6 @@ def connected_msg(msg):
 #    time.sleep(2)
 #    gps['basic_data']['position_longitude'] += 0.0005
 #    emit('server_response', {'data': gps})
-
-
-def sendingmsg():
-    for i in range(1,10):
-        socketio.emit('msg', {'count': i}, namespace='/demo')
-        time.sleep(1)
-
 
 def update_data():
     while True:
